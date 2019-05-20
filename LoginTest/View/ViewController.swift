@@ -40,6 +40,7 @@ class ViewController: UIViewController {
         self.viewModel.stateDidUpdate = { [weak self] state in
             switch state {
             case .loading:
+                
                 self?.indicator.isHidden = false
                 self?.indicator.startAnimating()
                 self?.loginButton.backgroundColor = .inactiveButtonColor
@@ -64,6 +65,10 @@ class ViewController: UIViewController {
                 self?.present(alert, animated: true, completion: nil)
             }
         }
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        self.view.endEditing(true)
     }
 
     private var loadFlag: Binder<Bool> {
