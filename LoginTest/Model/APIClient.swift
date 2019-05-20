@@ -8,11 +8,11 @@ enum APIError: Error, CustomStringConvertible {
     var description: String {
         switch self {
         case .unknown:
-            return ""
+            return "不明なエラーです。"
         case .invalidURL:
-            return ""
+            return "URLが不正です。"
         case .invalidResponse:
-            return ""
+            return "レスポンスデータが不正です。"
         }
     }
 }
@@ -58,6 +58,31 @@ final class APIClient: APIClientProtocol {
 
 final class MocAPIClient: APIClientProtocol {
     func post(url: String, body: Data?, success: @escaping ([String: Any]) -> (), failure: @escaping (Error) -> Void) {
+        guard let data = body else {
+            failure(APIError.unknown)
+            return
+        }
+        guard let jsonOptional = try? JSONSerialization.jsonObject(with: data, options: []), let json = jsonOptional as? [String: Any] else {
+            failure(APIError.unknown)
+            return
+        }
+        if let email = json["email"] as? String, let password = json["password"] as? String {
+            if email == "test" && password == "pass123" {
+                let userData: [String: Any] = ["id": "123", "name": "TestName"]
+                success(userData)
+            } else {
+                failure(APIError.unknown)
+            }
+        } else {
+            failure(APIError.unknown)
+        }
         
+        success(json)
+    }
+}
+
+final class MocFailedAPIClient: APIClientProtocol {
+    func post(url: String, body: Data?, success: @escaping ([String: Any]) -> (), failure: @escaping (Error) -> Void) {
+        failure(APIError.unknown)
     }
 }

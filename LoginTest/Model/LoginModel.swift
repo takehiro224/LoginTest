@@ -10,21 +10,21 @@ enum LoginError: Error, CustomStringConvertible {
     var description: String {
         switch self {
         case .invalidEmail:
-            return ""
+            return "e-mailが不正です"
         case .invalidPassword:
-            return ""
+            return "パスワードが不正です。"
         case .invalidEmailAndPassword:
-            return ""
+            return "e-mailとパスワードが不正です。"
         case .invalidResponseData:
-            return ""
+            return "不正なレスポンスデータです。"
         }
     }
 }
 
 protocol LoginModelProtocol {
     func validate(email: String?, password: String?) -> Observable<Void>
-    func createHttpBody(email: String, password: String) throws -> Data
-    func login(data: Data) throws -> Observable<User>
+    func createHttpBody(email: String?, password: String?) -> Data?
+    func login(data: Data) -> Observable<User>
 }
 
 final class LoginModel: LoginModelProtocol {
@@ -59,19 +59,20 @@ final class LoginModel: LoginModelProtocol {
         }
     }
     
-    func createHttpBody(email: String, password: String) throws -> Data {
+    func createHttpBody(email: String?, password: String?) -> Data? {
+        guard let email = email, let password = password else { return nil }
         let params: [String: Any] = ["email": email, "password": password]
         do {
             let data = try JSONSerialization.data(withJSONObject: params, options: .prettyPrinted)
             return data
-        } catch (let error){
-            throw error
+        } catch {
+            return nil
         }
     }
     
-    func login(data: Data) throws -> Observable<User> {
+    func login(data: Data) -> Observable<User> {
         return Observable<User>.create() { observer -> Disposable in
-            self.api.post(url: "", body: data, success: { data in
+            self.api.post(url: "URLを指定する", body: data, success: { data in
                 if let user = User(json: data) {
                     observer.onNext(user)
                     observer.onCompleted()
